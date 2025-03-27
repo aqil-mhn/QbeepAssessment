@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:qbeep_assessment/modules/screen/all_contact_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,6 +11,32 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchContactController = TextEditingController();
+
+  int? segmentControlValue = 0;
+  Map<int, Widget> tabs = {};
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+
+    tabs = {
+      0: Text(
+        "All",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white
+        ),
+      ),
+      1: Text(
+        "Favorite",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          // color: Colors.white
+        ),
+      )
+    };
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,32 +79,50 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SearchBar(
-                controller: searchContactController,
-                hintText: "Search contact",
-                trailing: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                    child: Icon(
-                      Icons.search,
-                      size: 30,
-                    ),
-                  )
-                ],
-                shadowColor: WidgetStatePropertyAll(Color.fromARGB(0, 63, 60, 51)),
-                backgroundColor: WidgetStatePropertyAll(const Color.fromARGB(255, 222, 220, 213)),
-                side: WidgetStatePropertyAll(BorderSide(
-                  color: Colors.black
-                )),
-              )
-            ],
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SearchBar(
+              controller: searchContactController,
+              hintText: "Search contact",
+              trailing: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                  child: Icon(
+                    Icons.search,
+                    size: 30,
+                  ),
+                )
+              ],
+              shadowColor: WidgetStatePropertyAll(Color.fromARGB(0, 63, 60, 51)),
+              backgroundColor: WidgetStatePropertyAll(const Color.fromARGB(255, 222, 220, 213)),
+              side: WidgetStatePropertyAll(BorderSide(
+                color: Colors.black
+              )),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 200, 10),
+              child: CupertinoSlidingSegmentedControl(
+                groupValue: segmentControlValue,
+                thumbColor: const Color.fromARGB(255, 163, 45, 37),
+                children: tabs,
+                onValueChanged: (value) {
+                  setState(() {
+                    segmentControlValue = value!;
+                  });
+                },
+              ),
+            ),
+            if (segmentControlValue == 0)
+            Expanded(
+              child: AllContactScreen(),
+            )
+          ],
         ),
       ),
     );

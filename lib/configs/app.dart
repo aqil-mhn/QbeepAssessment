@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:qbeep_assessment/configs/app_language.dart';
 import 'package:qbeep_assessment/configs/app_nav.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:qbeep_assessment/configs/database_config.dart';
 import 'package:qbeep_assessment/modules/home.dart';
 
 class App extends StatefulWidget {
@@ -28,6 +29,11 @@ class _AppState extends State<App> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    initiateDatabase();
+  }
+
+  initiateLocalDatabase() {
+    initiateDatabase();
   }
 
   @override

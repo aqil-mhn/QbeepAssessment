@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qbeep_assessment/modules/screen/all_contact_screen.dart';
+import 'package:qbeep_assessment/modules/service/contact_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +17,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int? segmentControlValue = 0;
   Map<int, Widget> tabs = {};
+  List<dynamic> contacts = [];
+
+  bool loading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    init();
+  }
+
+  init() async {
+    await getContact().whenComplete(() {
+      setState(() {
+        loading = false;
+      });
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -79,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      body: Padding(
+      body: !loading ? Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -123,6 +144,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: AllContactScreen(),
             )
           ],
+        ),
+      ) : Center(
+        child: CircularProgressIndicator(
+          color: const Color.fromARGB(255, 163, 45, 37),
         ),
       ),
     );

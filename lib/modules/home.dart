@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qbeep_assessment/modules/screen/all_contact_screen.dart';
+import 'package:qbeep_assessment/modules/screen/contact_form.dart';
 import 'package:qbeep_assessment/modules/service/contact_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,10 +17,16 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchContactController = TextEditingController();
 
   int? segmentControlValue = 0;
-  Map<int, Widget> tabs = {};
   List<dynamic> contacts = [];
+  List<dynamic> tabs = [
+    "All",
+    "Favourites",
+  ];
+
+  String selectedTab = "All";
 
   bool loading = true;
+  bool loadingTab = true;
 
   @override
   void initState() {
@@ -30,33 +37,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   init() async {
     await getContact().whenComplete(() {
-      setState(() {
-        loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
     });
-  }
-
-  @override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
-
-    tabs = {
-      0: Text(
-        "All",
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.white
-        ),
-      ),
-      1: Text(
-        "Favorite",
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          // color: Colors.white
-        ),
-      )
-    };
   }
   @override
   Widget build(BuildContext context) {
@@ -64,7 +50,13 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color.fromARGB(255, 222, 220, 213),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ContactFormScreen(
+                contact: {},
+              )
+            )
+          );
         },
         backgroundColor: const Color.fromARGB(255, 163, 45, 37),
         shape: RoundedRectangleBorder(
@@ -77,27 +69,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 163, 45, 37),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              flex: 1,
-              child: Icon(
-                Icons.contacts,
-                color: Colors.white,
-              ),
-            ),
-            Expanded(
-              flex: 14,
-              child: Text(
-                "My Contact",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white
-                ),
-              ),
-            ),
-          ],
+        centerTitle: true,
+        title: Text(
+          "My Contact",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white
+          ),
         ),
       ),
       body: !loading ? Padding(
@@ -124,30 +102,65 @@ class _HomeScreenState extends State<HomeScreen> {
               )),
             ),
             SizedBox(
-              height: 10,
+              height: 20,
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 200, 10),
-              child: CupertinoSlidingSegmentedControl(
-                groupValue: segmentControlValue,
-                thumbColor: const Color.fromARGB(255, 163, 45, 37),
-                children: tabs,
-                onValueChanged: (value) {
-                  setState(() {
-                    segmentControlValue = value!;
-                  });
-                },
-              ),
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _buildTabs(tabs[0]),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  _buildTabs(tabs[1]),
+                ],
+              )
             ),
-            if (segmentControlValue == 0)
             Expanded(
-              child: AllContactScreen(),
+              child: IndexedStack(
+                index: selectedTab == "All" ? 0 : 1,
+                children: [
+                  AllContactScreen(),
+                ],
+              ),
             )
           ],
         ),
       ) : Center(
         child: CircularProgressIndicator(
           color: const Color.fromARGB(255, 163, 45, 37),
+        ),
+      ),
+    );
+  }
+
+  _buildTabs(String title) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          selectedTab = title;
+          loadingTab = true;
+        });
+
+        Future.delayed(Duration(milliseconds: 500), () {
+          setState(() {
+            loadingTab = false;
+          });
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: selectedTab == title ? Color.fromARGB(255, 163, 45, 37) : Color.fromARGB(255, 230, 224, 204),
+          borderRadius: BorderRadius.circular(7)
+        ),
+        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: selectedTab == title ? Colors.white : Colors.black,
+          ),
         ),
       ),
     );

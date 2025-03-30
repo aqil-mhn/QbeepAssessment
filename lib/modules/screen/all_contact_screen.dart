@@ -4,8 +4,10 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:provider/provider.dart';
 import 'package:qbeep_assessment/configs/database_config.dart';
 import 'package:qbeep_assessment/modules/screen/contact_form.dart';
+import 'package:qbeep_assessment/modules/service/contact_provider.dart';
 import 'package:qbeep_assessment/modules/service/contact_service.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -26,14 +28,21 @@ class _AllContactScreenState extends State<AllContactScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    // Future.microtask(() {
+    //   Provider.of<ContactProvider>(context, listen: false).fetchContacts();
+    // });
 
     init();
   }
 
   init() async {
-    await queryDatabase().whenComplete(() {
-      setState(() {
-        loading = false;
+    Future.delayed(Duration(milliseconds: 2000), () async {
+      await queryDatabase().whenComplete(() {
+        if (mounted) {
+          setState(() {
+            loading = false;
+          });
+        }
       });
     });
   }
@@ -53,9 +62,15 @@ class _AllContactScreenState extends State<AllContactScreen> {
       masssage(contacts[i]);
     }
 
-    setState(() {
-      contacts;
-    });
+    // log("contact in all contact ${contacts.isNotEmpty.toString()}");
+
+    if (mounted) {
+      setState(() {
+        contacts;
+      });
+    }
+
+    // log("contacts in all contact ${contacts.toString()}");
   }
 
   masssage(dynamic user) async {
@@ -91,11 +106,15 @@ class _AllContactScreenState extends State<AllContactScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    var contactProvider = Provider.of<ContactProvider>(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: !loading ? ListView.builder(
-        itemCount: items.length,
+      body: !contactProvider.loading ? ListView.builder(
+        itemCount: contactProvider.contacts.length,
         itemBuilder: (context, index) {
+          List<Map<String, dynamic>> sortedContacts = contactProvider.contacts;
+          sortedContacts.sort((a, b) => a['fullName'].toString().toLowerCase().compareTo(b['fullName'].toString().toLowerCase()));
+          log("contactProvier in allContact ${contactProvider.contacts.length.toString()}");
           return Slidable(
             endActionPane: ActionPane(
               extentRatio: 1/3,
@@ -107,7 +126,7 @@ class _AllContactScreenState extends State<AllContactScreen> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => ContactFormScreen(
-                          contact: items[index],
+                          contact: sortedContacts[index],
                         )
                       )
                     );
@@ -122,7 +141,7 @@ class _AllContactScreenState extends State<AllContactScreen> {
                     setState(() {
                       loading = true;
                     });
-                    deleteItem(items[index]['id']);
+                    deleteItem(sortedContacts[index]['id']);
                   },
                   backgroundColor: const Color.fromARGB(255, 163, 45, 37),
                   foregroundColor: Colors.white,
@@ -133,10 +152,10 @@ class _AllContactScreenState extends State<AllContactScreen> {
             child: ListTile(
               contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
               title: Text(
-                items[index]['fullName']
+                sortedContacts[index]['fullName']
               ),
               subtitle: Text(
-                items[index]['email'],
+                sortedContacts[index]['email'],
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 12
@@ -145,21 +164,39 @@ class _AllContactScreenState extends State<AllContactScreen> {
               leading: Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  Container(
-                    padding: EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(
-                        width: 2,
-                        color: const Color.fromARGB(255, 231, 226, 210)
-                      ) 
-                    ),
-                    child: Image.file(
-                      File(items[index]['userProfile']),
-                      scale: 3,
+                  SizedBox(
+                    height: 60,
+                    width: 55,
+                    child: Container(
+                      padding: EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(50),
+                        border: Border.all(
+                          width: 2,
+                          color: const Color.fromARGB(255, 231, 226, 210)
+                        ) 
+                      ),
+                      child: ClipOval(
+                        child: Builder(
+                          builder: (context) {
+                            try {
+                              return Image.file(
+                                File(sortedContacts[index]['userProfile']),
+                                fit: BoxFit.cover,
+                              );
+                            } catch (e) {
+                              return Icon(
+                                Icons.person,
+                                // color: Colors.red,
+                              );
+                            }
+                          },
+                        ),
+                      ),
                     ),
                   ),
-                  items[index]['favorite'] == 'true' ? Positioned(
+                  if (sortedContacts[index]['favorite'] == 1)
+                  Positioned(
                     bottom: 5,
                     right: 5,
                     // left: 34,
@@ -168,10 +205,10 @@ class _AllContactScreenState extends State<AllContactScreen> {
                       backgroundColor: Colors.transparent,
                       child: Icon(
                         Icons.star,
-                        color: const Color.fromARGB(255, 229, 207, 10),
+                        color: const Color.fromARGB(255, 163, 45, 37),
                       ),
                     )
-                  ) : SizedBox()
+                  )
                 ],
               ),
               trailing: IconButton(

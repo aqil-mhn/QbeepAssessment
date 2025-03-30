@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "254153548440",
+    "firebase_url": "https://qbeep-assessement-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "qbeep-assessement",
+    "storage_bucket": "qbeep-assessement.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254153548440:android:e57564a6fe973dbdd7e6ed",
+        "android_client_info": {
+          "package_name": "com.example.qbeep_assessment"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb_fwAsILrWGgooqREsrQ3HuVLgr8LiEQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254153548440:android:e57564a6fe973dbdd7e6ed",
+        "android_client_info": {
+          "package_name": "com.example.qbeep_assessment.development"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb_fwAsILrWGgooqREsrQ3HuVLgr8LiEQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

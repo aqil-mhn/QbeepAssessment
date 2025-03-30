@@ -1,9 +1,13 @@
 import 'dart:developer';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:qbeep_assessment/modules/screen/all_contact_screen.dart';
 import 'package:qbeep_assessment/modules/screen/contact_form.dart';
+import 'package:qbeep_assessment/modules/screen/no_data_screen.dart';
+import 'package:qbeep_assessment/modules/service/contact_provider.dart';
 import 'package:qbeep_assessment/modules/service/contact_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
   TextEditingController searchContactController = TextEditingController();
 
   int? segmentControlValue = 0;
@@ -32,31 +37,37 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    init();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Provider.of<ContactProvider>(context, listen: false).fetchContacts();
+    // });
+    // init();
   }
 
   init() async {
-    await getContact().whenComplete(() {
-      if (mounted) {
-        setState(() {
-          loading = false;
-        });
-      }
+    setState(() {
+      loading = true;
     });
   }
   @override
   Widget build(BuildContext context) {
+    var contactProvider = Provider.of<ContactProvider>(context);
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 222, 220, 213),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
+        onPressed: () async {
+          final result = await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => ContactFormScreen(
                 contact: {},
               )
             )
           );
+
+          if (result == true) {
+            Future.delayed(Duration(milliseconds: 2000), () {
+              contactProvider.fetchContacts();
+            });
+          }
         },
         backgroundColor: const Color.fromARGB(255, 163, 45, 37),
         shape: RoundedRectangleBorder(
@@ -78,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: !loading ? Padding(
+      body: !contactProvider.loading ? Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -122,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 index: selectedTab == "All" ? 0 : 1,
                 children: [
                   AllContactScreen(),
+                  NoDataScreen()
                 ],
               ),
             )

@@ -12,7 +12,7 @@ Future<void> initiateDatabase() async {
     version: version
   );
 
-  String contact = "CREATE TABLE IF NOT EXISTS contact (id TEXT PRIMARY KEY, datasource TEXT, name TEXT, email TEXT, imagePath TEXT, dateInsert TEXT, favorite TEXT)";
+  String contact = "CREATE TABLE IF NOT EXISTS contact (id TEXT PRIMARY KEY, datasource TEXT, name TEXT, email TEXT, imagePath TEXT, dateInsert TEXT, favorite BOOL)";
   await database.execute(contact);
 }
 

@@ -29,7 +29,7 @@ class _AppState extends State<App> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    initiateDatabase();
+    // initiateLocalDatabase();
   }
 
   initiateLocalDatabase() {

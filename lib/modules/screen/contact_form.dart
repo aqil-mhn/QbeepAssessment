@@ -1,7 +1,14 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:qbeep_assessment/modules/service/contact_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class ContactFormScreen extends StatefulWidget {
   ContactFormScreen({super.key, required this.contact});
@@ -15,12 +22,17 @@ class ContactFormScreen extends StatefulWidget {
 class _ContactFormScreenState extends State<ContactFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
+  final DatabaseReference _firebaseDatabase = FirebaseDatabase.instance.ref();
 
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
 
   bool loading = true;
+  bool isImageEdit = false;
+  bool isEdit = false;
+  bool isFavorite = false;
+  String imageData = '';
   @override
   void initState() {
     // TODO: implement initState
@@ -30,11 +42,45 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
   }
 
   init() async {
+    if (widget.contact.isNotEmpty) {
+      isEdit = true;
+
+      if (widget.contact['favorite'] == 1) {
+        isFavorite = true;
+      }
+    }
     await populateForm().whenComplete(() {
       setState(() {
         loading = false;
       });
     });
+  }
+
+  saveContact(Map<String, dynamic> data) async {
+    log("widget.contact ${widget.contact.toString()}");
+    if (!isEdit) {
+      String newId = Uuid().v4().toString();
+      log("newUID ${newId.toString()}");
+      _firebaseDatabase.child("contacts/${newId.toString()}").set({
+        "firstName": data['firstName'],
+        "lastName": data['lastName'],
+        "email": data['email'],
+        "image": data['image'],
+        "favorite": false,
+        "id": newId.toString()
+      });
+    } else {
+      Map<String, dynamic> updateData = {
+        "firstName": data['firstName'],
+        "lastName": data['lastName'],
+        "email": data['email'],
+        "favorite": data['favorite']
+      };
+      if (isImageEdit) {
+        updateData['image'] = data['image'];
+      }
+      _firebaseDatabase.child("contacts/${widget.contact['id']}").update(updateData);
+    }
   }
 
   populateForm() async {
@@ -47,11 +93,29 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
         firstNameController.text = names[0];
         lastNameController.text = names[1];
       }
+      // if (widget.contact['userProfile'] != null) {
+      //   imageData = widget.contact['userProfile'];
+      // }
     }
   }
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      final File fileImage = File(image.path);
+      final bytes = await fileImage.readAsBytes();
+      final String base64Image = base64Encode(bytes);
+
+      isImageEdit = true;
+
+      setState(() {
+        imageData = base64Image;
+        widget.contact['userProfile'] = image.path;
+      });
+    } else {
+      isImageEdit = false;
+    }
   }
   @override
   Widget build(BuildContext context) {
@@ -77,6 +141,28 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
             color: Colors.white,
           ),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                isFavorite = !isFavorite;
+              });
+              Map<String, dynamic> contact = {
+                "firstName": firstNameController.text,
+                "lastName": lastNameController.text,
+                "email": emailController.text,
+                "image": imageData,
+                "favorite": isFavorite
+              };
+              saveContact(contact);
+              Provider.of<ContactProvider>(context, listen: false).fetchContacts();
+            },
+            icon: Icon(
+              !isFavorite ? CupertinoIcons.star_slash : CupertinoIcons.star,
+              color: Colors.white,
+            ),
+          )
+        ],
       ),
       body: !loading ? Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -104,12 +190,19 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                             child: SizedBox(
                               width: 120,
                               height: 120,
-                              child: widget.contact['userProfile'] != null ? Image.file(
-                                File(widget.contact['userProfile']),
-                                fit: BoxFit.cover
-                              ) : Icon(
+                              child: widget.contact['userProfile'] != null ? ClipOval(
+                                child: Image.file(
+                                  File(widget.contact['userProfile']),
+                                  fit: BoxFit.cover
+                                ),
+                              ) : imageData.isEmpty ? Icon(
                                 Icons.person,
                                 size: 80,
+                              ) : ClipOval(
+                                child: Image.memory(
+                                  base64Decode(imageData),
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             )
                           ),
@@ -249,8 +342,19 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                       borderRadius: BorderRadius.circular(20)
                     ))
                   ),
-                  onPressed: () {
-                    
+                  onPressed: () async {
+                    Map<String, dynamic> contact = {
+                      "firstName": firstNameController.text,
+                      "lastName": lastNameController.text,
+                      "email": emailController.text,
+                      "image": imageData,
+                      "favorite": isFavorite
+                    };
+
+                    saveContact(contact);
+                    Provider.of<ContactProvider>(context, listen: false).fetchContacts();
+
+                    Navigator.of(context).pop(true);
                   },
                   child: Text(
                     "Save",

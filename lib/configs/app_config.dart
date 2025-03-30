@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:qbeep_assessment/configs/app.dart';
 import 'package:qbeep_assessment/configs/app_language.dart';
 import 'package:qbeep_assessment/configs/app_theme.dart';
+import 'package:qbeep_assessment/modules/service/contact_provider.dart';
 
 enum AppEnvironment {
   development,
@@ -46,6 +47,9 @@ class AppConfig {
           ),
           ChangeNotifierProvider(
             create: (context) => AppLanguage()
+          ),
+          ChangeNotifierProvider(
+            create: (context) => ContactProvider(),
           )
         ],
         child: App(

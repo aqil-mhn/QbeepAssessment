@@ -27,6 +27,7 @@ class _NoDataScreen extends State<NoDataScreen> {
     double widths = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: AnimatedOpacity(
         opacity: _visible ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 300),

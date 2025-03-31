@@ -14,10 +14,10 @@ Future<int> insertLDB(Map<String, dynamic> user, String image) async {
   );
 
   String imageProfile = "";
-  await convertImageAndPath(image, "${user['firstName']}${user['lastName']}").then((value) {
+  await convertImageAndPath(image, "${user['id']}").then((value) {
     imageProfile = value;
   });
-  log("imageProfile in convertImage ${imageProfile.toString()}");
+  // log("imageProfile in convertImage ${imageProfile.toString()}");
 
   try {
     List<Map<String, Object?>> query = await db.query(
@@ -26,6 +26,8 @@ Future<int> insertLDB(Map<String, dynamic> user, String image) async {
       whereArgs: [user['id']]
     );
 
+    log("imageProfile in INSERTLDB ${imageProfile.toString()}");
+
     if (query.isNotEmpty) {
       int updateLBD = await db.update(
         'contact',
@@ -33,7 +35,7 @@ Future<int> insertLDB(Map<String, dynamic> user, String image) async {
         {
           'name': "${user['firstName']} ${user['lastName']}",
           'email': user['email'].toString(),
-          'datasource': jsonEncode(user),
+          // 'datasource': jsonEncode(user),
           'dateInsert': DateTime.now().toLocal().toString(),
           'favorite': user['favorite'],
           'imagePath': imageProfile
@@ -49,7 +51,7 @@ Future<int> insertLDB(Map<String, dynamic> user, String image) async {
           'id': user['id'],
           'name': "${user['firstName']} ${user['lastName']}",
           'email': user['email'].toString(),
-          'datasource': jsonEncode(user),
+          // 'datasource': jsonEncode(user),
           'dateInsert': DateTime.now().toLocal().toString(),
           'favorite': user['favorite'],
           'imagePath': imageProfile
@@ -62,11 +64,11 @@ Future<int> insertLDB(Map<String, dynamic> user, String image) async {
   return 0;
 }
 
-convertImageAndPath(String base64Image, String name) async {
+convertImageAndPath(String base64Image, String id) async {
   final Directory directory = await getApplicationDocumentsDirectory();
   final userProfileDirectoryPath = '${directory.path}/userProfile';
 
-  final filePath = '${userProfileDirectoryPath}/${name}';
+  final filePath = '${userProfileDirectoryPath}/${id}_${DateTime.now().microsecondsSinceEpoch}';
   final Directory userProfileDir = Directory(userProfileDirectoryPath);
 
   if (!await userProfileDir.exists()) {

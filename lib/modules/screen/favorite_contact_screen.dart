@@ -14,14 +14,14 @@ import 'package:qbeep_assessment/modules/service/contact_provider.dart';
 import 'package:qbeep_assessment/modules/service/contact_service.dart';
 import 'package:sqflite/sqflite.dart';
 
-class AllContactScreen extends StatefulWidget {
-  const AllContactScreen({super.key});
+class FavoriteContactScreen extends StatefulWidget {
+  const FavoriteContactScreen({super.key});
 
   @override
-  State<AllContactScreen> createState() => _AllContactScreenState();
+  State<FavoriteContactScreen> createState() => _FavoriteContactScreenState();
 }
 
-class _AllContactScreenState extends State<AllContactScreen> {
+class _FavoriteContactScreenState extends State<FavoriteContactScreen> {
   final databaseReference = FirebaseDatabase.instance.ref();
   List<dynamic> contacts = [];
   List<Map<String, dynamic>> items = [];
@@ -115,14 +115,15 @@ class _AllContactScreenState extends State<AllContactScreen> {
   @override
   Widget build(BuildContext context) {
     var contactProvider = Provider.of<ContactProvider>(context);
+    List<Map<String, dynamic>> favoriteContact = contactProvider.contacts.where((contact) => contact['favorite'] == true || contact['favorite'] == 1).toList();
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: contactProvider.contacts.isEmpty ? NoDataScreen() : !contactProvider.loading ? ListView.builder(
-        itemCount: contactProvider.contacts.length,
+      body: favoriteContact.isEmpty ? NoDataScreen() : !contactProvider.loading ? ListView.builder(
+        itemCount: favoriteContact.length,
         itemBuilder: (context, index) {
-          List<Map<String, dynamic>> sortedContacts = contactProvider.contacts;
+          List<Map<String, dynamic>> sortedContacts = favoriteContact;
           sortedContacts.sort((a, b) => a['fullName'].toString().toLowerCase().compareTo(b['fullName'].toString().toLowerCase()));
-          // log("contactProvier in allContact ${contactProvider.contacts.length.toString()}");
+          // log("contactProvier in allContact ${favoriteContact.length.toString()}");
           return Slidable(
             endActionPane: ActionPane(
               extentRatio: 1/3,

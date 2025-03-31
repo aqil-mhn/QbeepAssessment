@@ -81,6 +81,19 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
       }
       _firebaseDatabase.child("contacts/${widget.contact['id']}").update(updateData);
     }
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: Duration(seconds: 1),
+        content: Text("${isEdit ? "Edit" : "Save"} successfully"),
+        padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+        margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50)),
+      ),
+    );
   }
 
   populateForm() async {
@@ -181,7 +194,7 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                           Container(
                             padding: EdgeInsets.all(2),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
+                              borderRadius: BorderRadius.circular(100),
                               border: Border.all(
                                 width: 2,
                                 color: const Color.fromARGB(255, 231, 226, 210)
@@ -248,7 +261,7 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
                             child: Text(
-                              "First Name",
+                              "First Name*",
                               style: TextStyle(
                                 fontSize: 19,
                                 color: const Color.fromARGB(255, 163, 45, 37)
@@ -259,6 +272,13 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                             height: 10,
                           ),
                           TextFormField(
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Required";
+                              }
+                              return null;
+                            },
+                            textCapitalization: TextCapitalization.words,
                             controller: firstNameController,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
@@ -274,7 +294,7 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
                             child: Text(
-                              "Last Name",
+                              "Last Name*",
                               style: TextStyle(
                                 fontSize: 19,
                                 color: const Color.fromARGB(255, 163, 45, 37)
@@ -285,6 +305,13 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                             height: 10,
                           ),
                           TextFormField(
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Required";
+                              }
+                              return null;
+                            },
+                            textCapitalization: TextCapitalization.words,
                             controller: lastNameController,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
@@ -300,7 +327,7 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
                             child: Text(
-                              "Email",
+                              "Email*",
                               style: TextStyle(
                                 fontSize: 19,
                                 color: const Color.fromARGB(255, 163, 45, 37)
@@ -311,6 +338,16 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                             height: 10,
                           ),
                           TextFormField(
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Required";
+                              }
+                              if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+                                return "Enter a valid email address";
+                              }
+
+                              return null;
+                            },
                             controller: emailController,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
@@ -343,18 +380,33 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
                     ))
                   ),
                   onPressed: () async {
-                    Map<String, dynamic> contact = {
-                      "firstName": firstNameController.text,
-                      "lastName": lastNameController.text,
-                      "email": emailController.text,
-                      "image": imageData,
-                      "favorite": isFavorite
-                    };
+                    if (_formKey.currentState!.validate() && (isEdit || imageData.isNotEmpty)) {
+                      Map<String, dynamic> contact = {
+                        "firstName": firstNameController.text,
+                        "lastName": lastNameController.text,
+                        "email": emailController.text,
+                        "image": imageData,
+                        "favorite": isFavorite
+                      };
 
-                    saveContact(contact);
-                    Provider.of<ContactProvider>(context, listen: false).fetchContacts();
+                      saveContact(contact);
+                      Provider.of<ContactProvider>(context, listen: false).fetchContacts();
 
-                    Navigator.of(context).pop(true);
+                      Navigator.of(context).pop(true);
+                    } else {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          duration: Duration(seconds: 1),
+                          content: Text("Please fill in all fields and select an image"),
+                          padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+                          margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50)),
+                        ),
+                      );
+                    }
                   },
                   child: Text(
                     "Save",

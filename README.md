@@ -5,7 +5,7 @@ A Flutter project for managing contacts.
 ## Prerequisites
 
 Before running this app, ensure you have the following installed:
-- [Flutter](https://docs.flutter.dev/get-started/install) (version 3.10.0 or higher)
+- [Flutter](https://docs.flutter.dev/get-started/install) (version 3.29.2 or higher)
 - Dart SDK (comes with Flutter)
 - Android Studio or Visual Studio Code (optional, for development)
 - A connected device or emulator for testing
@@ -16,8 +16,8 @@ Follow these steps to run the app:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/qbeep_assessment.git
-cd qbeep_assessment
+git clone https://github.com/aqil-mhn/QbeepAssessment
+cd QbeepAssessment
 ```
 
 ### 2. Install Flutter Dependencies
@@ -25,7 +25,7 @@ Ensure you have Flutter installed and set up. Check your Flutter version:
 ```bash
 flutter --version
 ```
-The app requires **Flutter 3.10.0 or higher**.
+The app requires **Flutter 3.29.2 or higher**.
 
 Install the required dependencies:
 ```bash
@@ -43,10 +43,6 @@ To build the app for release:
 - **Android:**
   ```bash
   flutter build apk
-  ```
-- **iOS:**
-  ```bash
-  flutter build ios
   ```
 
 ## Features
